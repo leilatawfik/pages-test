@@ -94,7 +94,7 @@
 
   .fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
   @media (max-width: 560px) { .fields { grid-template-columns: 1fr; } }
-  .field { display: grid; gap: var(--space-2); min-width: 0; }
+  .field { display: grid; gap: var(--space-2); min-width: 0; align-content: start; }
   label.lbl { font-size: 0.875rem; font-weight: 600; }
   .opt { font-weight: 400; color: var(--ink-40); }
   .req { color: var(--danger); font-weight: 700; }
@@ -114,8 +114,17 @@
   select:disabled { cursor: not-allowed; }
   button:focus-visible, .choice input:focus-visible + span, .script:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 5px var(--focus); }
 
+  .optional-block { display: grid; gap: var(--space-3); border-top: 1px solid var(--line); padding-top: var(--space-4); }
+  .sub-head { font-weight: 600; color: var(--ink); }
+  .fields.three { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 560px) { .fields.three { grid-template-columns: 1fr; } }
+  .why { font-size: 0.875rem; color: var(--ink-60); }
+  .why summary { cursor: pointer; color: var(--accent); font-weight: 600; width: fit-content; }
+  .why summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .why p { margin-top: var(--space-2); }
   .gift { display: grid; gap: var(--space-3); border-top: 1px solid var(--line); padding-top: var(--space-4); }
   .gift-note { font-weight: 600; color: var(--ink); }
+  .gift-private { font-size: 0.8125rem; color: var(--ink-60); }
   .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
   @media (max-width: 560px) { .choices { grid-template-columns: 1fr; } }
   .choice { position: relative; display: block; cursor: pointer; }
@@ -168,13 +177,26 @@
 
   .status { font-size: 0.875rem; }
   .status.err { color: var(--danger); }
-  .status.ok { color: var(--ok); }
+  .status.ok { color: var(--ok); font-weight: 600; }
   .status.warn { color: var(--warn); }
+  .status.rec { color: var(--danger); font-weight: 600; display: flex; align-items: center; gap: var(--space-2); }
+  .status.rec::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: blink 1.2s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .status.rec::before { animation: none; } }
 
+  .rec-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+  .btn-sm { padding: 0.7rem 1.4rem; }
+  .queue { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+  .queue li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4); background: var(--card); }
+  .queue .q-title { font-weight: 600; color: var(--ink); min-width: 0; }
+  .queue .q-meta { color: var(--ink-60); font-size: 0.875rem; font-weight: 400; margin-left: var(--space-2); font-variant-numeric: tabular-nums; }
+  .queue button { padding: 0.45rem 0.9rem; font-size: 0.875rem; flex: none; }
   .more { display: grid; gap: var(--space-3); border-top: 1px solid var(--line); padding-top: var(--space-4); }
   .more p { font-size: 1rem; }
   .more-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
   .choice .done-tag { color: var(--ok); font-weight: 600; }
+  .ref { font-size: 1.0625rem; font-weight: 700; letter-spacing: .06em; color: var(--ink); }
   .ref { font-family: ui-monospace, "SF Mono", Menlo, monospace; background: var(--tint); padding: 2px 8px; border-radius: 6px; }
   footer { color: var(--ink-40); font-size: 0.8125rem; }
 
@@ -197,10 +219,18 @@
         <div class="step-head"><h2 id="s1">About you</h2></div>
         <div class="fields">
           <div class="field">
-            <label class="lbl" for="country">Country where you grew up <span class="req" aria-hidden="true">*</span></label>
+            <label class="lbl" for="firstLanguage">First language <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="firstLanguage" list="languages" autocomplete="off" placeholder="e.g. Punjabi" required maxlength="80">
+          </div>
+          <div class="field">
+            <label class="lbl" for="country">Country you currently live in <span class="req" aria-hidden="true">*</span></label>
             <select id="country" required>
-              <option value="">Select the country you grew up in</option>
+              <option value="">Select the country you live in</option>
             </select>
+          </div>
+          <div class="field">
+            <label class="lbl" for="otherLanguages">Other languages you speak <span class="opt">(optional)</span></label>
+            <input type="text" id="otherLanguages" autocomplete="off" placeholder="e.g. Hindi, French" maxlength="120">
           </div>
           <div class="field">
             <label class="lbl" for="subdivision" id="subdivisionLabel">Province or state <span class="req" aria-hidden="true">*</span></label>
@@ -210,24 +240,72 @@
             <input type="text" id="subdivisionText" autocomplete="off" maxlength="80" placeholder="e.g. Lagos, Kerala, Bavaria" hidden>
           </div>
           <div class="field">
-            <label class="lbl" for="firstLanguage">First language <span class="req" aria-hidden="true">*</span></label>
-            <input type="text" id="firstLanguage" list="languages" autocomplete="off" placeholder="e.g. Punjabi" required maxlength="80">
+            <label class="lbl" for="accent">How would you describe your accent? <span class="req" aria-hidden="true">*</span></label>
+            <input type="text" id="accent" autocomplete="off" placeholder="e.g. Nigerian English, Scottish, Québécois" required maxlength="120">
           </div>
-          <div class="field">
-            <label class="lbl" for="otherLanguages">Other languages you speak <span class="opt">(optional)</span></label>
-            <input type="text" id="otherLanguages" autocomplete="off" placeholder="e.g. Hindi, French" maxlength="120">
+        </div>
+
+        <div class="optional-block">
+          <p class="sub-head">A little bit more about you <span class="opt">(optional)</span></p>
+          <div class="fields three">
+            <div class="field">
+              <label class="lbl" for="ethnicity">Ethnicity</label>
+              <!-- Categories follow Statistics Canada's population groups -->
+              <select id="ethnicity">
+                <option value="">Select</option>
+                <option>Arab</option>
+                <option>Black</option>
+                <option>Chinese</option>
+                <option>Filipino</option>
+                <option>Indigenous (First Nations, Métis or Inuit)</option>
+                <option>Japanese</option>
+                <option>Korean</option>
+                <option>Latin American</option>
+                <option>South Asian</option>
+                <option>Southeast Asian</option>
+                <option>West Asian</option>
+                <option>White</option>
+                <option>Mixed or multiple ethnicities</option>
+                <option>Prefer to self-describe</option>
+                <option>Prefer not to say</option>
+              </select>
+              <input type="text" id="ethnicityText" autocomplete="off" maxlength="120" placeholder="Self-describe" hidden aria-label="Ethnicity, in your own words">
+            </div>
+            <div class="field">
+              <label class="lbl" for="gender">Gender</label>
+              <select id="gender">
+                <option value="">Select</option>
+                <option>Woman</option>
+                <option>Man</option>
+                <option>Non-binary</option>
+                <option>Prefer to self-describe</option>
+                <option>Prefer not to say</option>
+              </select>
+              <input type="text" id="genderText" autocomplete="off" maxlength="80" placeholder="Self-describe" hidden aria-label="Gender, in your own words">
+            </div>
+            <div class="field">
+              <label class="lbl" for="age">Age</label>
+              <select id="age">
+                <option value="">Select</option>
+                <option>18–24</option>
+                <option>25–34</option>
+                <option>35–44</option>
+                <option>45–54</option>
+                <option>55–64</option>
+                <option>65 or older</option>
+                <option>Prefer not to say</option>
+              </select>
+            </div>
           </div>
-          <div class="field">
-            <label class="lbl" for="residence">Country you currently live in <span class="req" aria-hidden="true">*</span></label>
-            <select id="residence" required>
-              <option value="">Select the country you live in</option>
-            </select>
-          </div>
+          <details class="why">
+            <summary>Why are you collecting this information?</summary>
+            <p>These questions are completely optional, but knowing a little about who is speaking helps us find and reduce bias in AI scribes, so our products work equally well for everyone. This project is part of how we practice Responsible AI, in line with our principles.</p>
+          </details>
         </div>
         <datalist id="languages"></datalist>
 
         <div class="gift">
-          <p class="gift-note">Lorem ipsum dolor sit amet, please fill in the information below.</p>
+          <p class="gift-note">Lorem ipsum dolor sit amet, please fill in the following information:</p>
           <div class="fields">
             <div class="field">
               <label class="lbl" for="giftName">Name <span class="opt">(optional)</span></label>
@@ -238,6 +316,7 @@
               <input type="email" id="giftEmail" autocomplete="email" maxlength="160" placeholder="name@example.com">
             </div>
           </div>
+          <p class="gift-private">Your name and email are stored separately and are not linked to your recordings or your answers above. We use them only to send your gift card.</p>
         </div>
         <p class="req-note"><span class="req" aria-hidden="true">*</span> Required</p>
       </section>
@@ -251,10 +330,12 @@
           <div class="rec-row">
             <button type="button" class="btn-rec" id="recBtn"><span class="dot" aria-hidden="true"></span><span id="recLabel">Start recording</span></button>
             <span class="timer" id="timer" aria-live="off">0:00</span>
-            <span class="meter" aria-hidden="true"><i id="level"></i></span>
+            <span class="meter" id="meter" aria-hidden="true" hidden><i id="level"></i></span>
           </div>
           <audio id="playback" controls hidden></audio>
-          <button type="button" class="btn-ghost" id="redoBtn" hidden>Record again</button>
+          <div class="rec-actions">
+            <button type="button" class="btn-primary btn-sm" id="nextBtn" hidden>Record another appointment</button>
+          </div>
           <p class="status" id="recStatus" role="status"></p>
         </div>
         <div class="script" id="script" tabindex="0" role="region" aria-label="Appointment transcript"></div>
@@ -263,6 +344,8 @@
 
       <section class="step" aria-labelledby="s4">
         <div class="step-head"><h2 id="s4">Send</h2></div>
+        <p class="hint" id="queueEmpty">Your recordings will appear here. You can record more than one and send them all at once.</p>
+        <ul class="queue" id="queueList"></ul>
         <label class="consent" for="consent">
           <input type="checkbox" id="consent" required>
           <span><span id="consentText"></span> <span class="req" aria-hidden="true">*</span></span>
@@ -298,7 +381,7 @@
 const CONFIG = {
   // Paste the Web app URL from your Apps Script deployment (ends in /exec).
   // Leave empty to try the page without saving anything.
-  ENDPOINT_URL: "",
+  ENDPOINT_URL: "https://script.google.com/macros/s/AKfycbwiZJFxwYjx7wTNdn4gGGAnWDhf55sjTBuvK4y2oSFp2rlVrux8gOoTJMLucPy6Z67tpQ/exec",
 
   // Who participants can contact to ask questions or withdraw.
   CONTACT_EMAIL: "test@example.com",
@@ -423,7 +506,7 @@ const SUBDIVISIONS = {
 
 /* ============================================================ */
 const $ = (id) => document.getElementById(id);
-const state = { recorded: new Set(), refs: [], giftSent: false, transcriptId: null, blob: null, mimeType: "", seconds: 0, recorder: null, stream: null, timerId: null, raf: null, audioCtx: null };
+const state = { takes: new Map(), sent: new Set(), refs: [], giftSent: false, transcriptId: null, blob: null, mimeType: "", seconds: 0, recorder: null, stream: null, timerId: null, raf: null, audioCtx: null };
 
 // Consent + footer
 $("consentText").textContent = "Lorem ipsum dolor sit amet. I agree to the test terms (placeholder consent).";
@@ -441,10 +524,6 @@ function addOption(sel, value, label) { const o = document.createElement("option
 PINNED.forEach((c) => addOption(countrySel, c));
 const sep = document.createElement("option"); sep.disabled = true; sep.textContent = "──────────"; countrySel.appendChild(sep);
 COUNTRIES.forEach((c) => addOption(countrySel, c));
-const residenceSel = $("residence");
-PINNED.forEach((c) => addOption(residenceSel, c));
-residenceSel.appendChild(sep.cloneNode(true));
-COUNTRIES.forEach((c) => addOption(residenceSel, c));
 countrySel.addEventListener("change", () => {
   const c = countrySel.value, sub = SUBDIVISIONS[c];
   subSel.textContent = ""; subText.value = "";
@@ -464,8 +543,15 @@ countrySel.addEventListener("change", () => {
 });
 // Grey out a dropdown while it still shows its placeholder, like the text-field placeholders
 function syncEmpty(sel) { sel.classList.toggle("is-empty", !sel.value); }
-[countrySel, subSel, residenceSel].forEach((sel) => { syncEmpty(sel); sel.addEventListener("change", () => syncEmpty(sel)); });
+[countrySel, subSel, $("ethnicity"), $("gender"), $("age")].forEach((sel) => { syncEmpty(sel); sel.addEventListener("change", () => syncEmpty(sel)); });
 countrySel.addEventListener("change", () => syncEmpty(subSel));  // province list is rebuilt on country change
+// "Prefer to self-describe" opens a text box under the dropdown
+const SELF = "Prefer to self-describe";
+["gender", "ethnicity"].forEach((id) => $(id).addEventListener("change", () => {
+  const self = $(id).value === SELF;
+  $(id + "Text").hidden = !self; if (self) $(id + "Text").focus();
+}));
+function selfDescribed(id) { return $(id).value === SELF ? ($(id + "Text").value.trim() || "Self-described") : $(id).value; }
 function subdivisionValue() { return SUBDIVISIONS[countrySel.value] ? subSel.value : subText.value.trim(); }
 
 // Transcript choices
@@ -478,7 +564,7 @@ CONFIG.TRANSCRIPTS.forEach((t, i) => {
   const span = document.createElement("span");
   const b = document.createElement("b"); b.textContent = t.title;
   const words = t.text.replace(/^(Doctor|Patient):/gm, "").split(/\s+/).filter(Boolean).length;
-  const s = document.createElement("small"); s.id = "meta-" + t.id; s.textContent = `About ${t.minutes} minutes · ${words} words`;
+  const s = document.createElement("small"); s.id = "meta-" + t.id; s.dataset.default = `About ${t.minutes} minutes · ${words} words`; s.textContent = s.dataset.default;
   span.append(b, s); lab.append(input, span); choices.appendChild(lab);
   input.addEventListener("change", () => selectTranscript(t.id));
 });
@@ -493,7 +579,7 @@ function selectTranscript(id) {
     const p = document.createElement("p"); p.textContent = m ? m[2] : line;
     turn.append(who, p); box.appendChild(turn);
   });
-  if (state.blob) resetRecording("You switched appointments, so please record the new one.");
+  showTake(id);
 }
 // With only one appointment there's nothing to choose, so hide the picker.
 if (CONFIG.TRANSCRIPTS.length === 1) { choices.hidden = true; $("s2").textContent = "Read and record the appointment"; }
@@ -512,7 +598,12 @@ const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(
 function setRecStatus(msg, cls = "") { const el = $("recStatus"); el.textContent = msg; el.className = "status " + cls; }
 
 $("recBtn").addEventListener("click", () => (state.recorder && state.recorder.state === "recording") ? stopRecording() : startRecording());
-$("redoBtn").addEventListener("click", () => resetRecording(""));
+$("nextBtn").addEventListener("click", () => {
+  const next = nextToRecord();
+  if (!next) return;
+  $("t-" + next.id).checked = true; selectTranscript(next.id);
+  $("s2").scrollIntoView({ behavior: "smooth", block: "start" });
+});
 
 async function startRecording() {
   const mime = pickMime();
@@ -526,18 +617,25 @@ async function startRecording() {
     setRecStatus("We couldn't use your microphone. Allow microphone access for this site in your browser settings, then try again.", "err"); return;
   }
   const chunks = [];
+  const tid = state.transcriptId;  // the appointment this take belongs to, even if they switch mid-recording
   const rec = new MediaRecorder(state.stream, mime ? { mimeType: mime } : undefined);
   state.recorder = rec;
   rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
   rec.onstop = () => {
     stopMeter();
     state.stream.getTracks().forEach((t) => t.stop());
-    state.mimeType = rec.mimeType || mime || "audio/webm";
-    if (state.seconds < CONFIG.MIN_SECONDS) { resetRecording(`That was under ${CONFIG.MIN_SECONDS} seconds. Please read the whole appointment.`); return; }
-    state.blob = new Blob(chunks, { type: state.mimeType });
-    const a = $("playback"); a.src = URL.createObjectURL(state.blob); a.hidden = false;
-    $("redoBtn").hidden = false; $("recBtn").hidden = true;
-    setRecStatus("Listen back if you like. If it sounds clear, send it below.", "ok");
+    const mimeType = rec.mimeType || mime || "audio/webm";
+    if (state.seconds < CONFIG.MIN_SECONDS) {
+      if (tid === state.transcriptId) {
+        const msg = `That was under ${CONFIG.MIN_SECONDS} seconds. Please read the whole appointment.`;
+        if (state.takes.has(tid)) { showTake(tid); setRecStatus(msg + " Your earlier recording is still saved.", "warn"); }
+        else resetRecording(msg);
+      }
+      return;
+    }
+    state.takes.set(tid, { blob: new Blob(chunks, { type: mimeType }), mimeType, seconds: state.seconds });
+    renderQueue();
+    if (tid === state.transcriptId) showTake(tid, true);
   };
   $("script").scrollTop = 0;
   rec.start(1000);
@@ -548,20 +646,74 @@ async function startRecording() {
     $("timer").textContent = fmt(state.seconds);
     if (state.seconds >= CONFIG.MAX_SECONDS) stopRecording();
   }, 250);
-  startMeter(state.stream);
+  startMeter(state.stream); $("meter").hidden = false;
+  stopPlayback(); $("playback").hidden = true; $("nextBtn").hidden = true;
   $("recBtn").classList.add("recording"); $("recLabel").textContent = "Stop recording";
-  setRecStatus("Recording… read the appointment, then press Stop.");
+  setRecStatus("Recording… read the appointment, then press Stop.", "rec");
 }
 function stopRecording() {
   clearInterval(state.timerId);
   $("recBtn").classList.remove("recording"); $("recLabel").textContent = "Start recording";
   if (state.recorder && state.recorder.state !== "inactive") state.recorder.stop();
 }
+// Stop any recording that's playing back, e.g. when moving to another appointment
+function stopPlayback() { const a = $("playback"); a.pause(); a.currentTime = 0; }
+// Recorder UI only; saved takes stay in state.takes until sent or removed
 function resetRecording(msg) {
-  state.blob = null; state.seconds = 0;
-  const a = $("playback"); if (a.src) URL.revokeObjectURL(a.src); a.removeAttribute("src"); a.hidden = true;
-  $("redoBtn").hidden = true; $("recBtn").hidden = false; $("timer").textContent = "0:00";
+  state.seconds = 0;
+  stopPlayback();
+  const a = $("playback"); if (a.src) URL.revokeObjectURL(a.src); a.removeAttribute("src"); a.load(); a.hidden = true;
+  $("nextBtn").hidden = true; $("recLabel").textContent = "Start recording"; $("timer").textContent = "0:00";
   setRecStatus(msg, msg ? "warn" : "");
+}
+// Show the saved take for this appointment (playback + buttons), or a fresh recorder if there isn't one
+function showTake(id, justRecorded) {
+  if (state.recorder && state.recorder.state === "recording") return;
+  const take = state.takes.get(id);
+  resetRecording("");
+  if (!take) return;
+  const a = $("playback"); a.src = URL.createObjectURL(take.blob); a.hidden = false;
+  $("timer").textContent = fmt(take.seconds);
+  $("recLabel").textContent = "Record this one again";
+  const next = nextToRecord();
+  $("nextBtn").hidden = !next;
+  setRecStatus(justRecorded
+    ? (next ? "Saved. Listen back if you like, then record another appointment or send it below." : "Saved. Listen back if you like, then send it below.")
+    : "You've recorded this one. It's ready to send below.", "ok");
+}
+// The next appointment (after the current one) that hasn't been recorded or sent yet
+function nextToRecord() {
+  const list = CONFIG.TRANSCRIPTS, start = list.findIndex((t) => t.id === state.transcriptId);
+  for (let k = 1; k <= list.length; k++) {
+    const t = list[(start + k) % list.length];
+    if (!state.takes.has(t.id) && !state.sent.has(t.id)) return t;
+  }
+  return null;
+}
+// Recordings waiting to be sent, listed in the Send section
+function renderQueue() {
+  const ul = $("queueList"); ul.textContent = "";
+  const queued = CONFIG.TRANSCRIPTS.filter((t) => state.takes.has(t.id));
+  queued.forEach((t) => {
+    const li = document.createElement("li");
+    const title = document.createElement("span"); title.className = "q-title"; title.textContent = t.title;
+    const meta = document.createElement("span"); meta.className = "q-meta"; meta.textContent = fmt(state.takes.get(t.id).seconds);
+    title.append(meta);
+    const rm = document.createElement("button"); rm.type = "button"; rm.className = "btn-ghost"; rm.textContent = "Remove";
+    rm.setAttribute("aria-label", `Remove the ${t.title} recording`);
+    rm.addEventListener("click", () => { state.takes.delete(t.id); renderQueue(); if (t.id === state.transcriptId) resetRecording(""); });
+    li.append(title, rm); ul.appendChild(li);
+  });
+  $("queueEmpty").hidden = queued.length > 0;
+  $("submitBtn").textContent = queued.length > 1 ? `Send ${queued.length} recordings` : "Send recording";
+  // Picker cards: what's waiting and what's already sent
+  CONFIG.TRANSCRIPTS.forEach((t) => {
+    const m = $("meta-" + t.id); if (!m) return;
+    const sent = state.sent.has(t.id), queuedHere = state.takes.has(t.id);
+    m.textContent = sent ? "Sent ✓" : queuedHere ? "Recorded · ready to send" : m.dataset.default;
+    m.classList.toggle("done-tag", sent || queuedHere);
+  });
+  if (state.transcriptId && state.takes.has(state.transcriptId)) $("nextBtn").hidden = !nextToRecord();
 }
 function startMeter(stream) {
   try {
@@ -579,12 +731,19 @@ function startMeter(stream) {
   } catch (_) { /* meter is optional */ }
 }
 function stopMeter() {
+  $("meter").hidden = true;
   cancelAnimationFrame(state.raf); $("level").style.width = "0";
   if (state.audioCtx) { state.audioCtx.close().catch(() => {}); state.audioCtx = null; }
 }
 
 // Submit
 function setSubmitStatus(msg, cls = "") { const el = $("submitStatus"); el.textContent = msg; el.className = "status " + cls; }
+// Short reference code people can quote to have a recording deleted. No 0/O or 1/I, so it's easy to read back.
+function makeRef() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => chars[b % chars.length]).join("");
+}
 function blobToBase64(blob) {
   return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(blob); });
 }
@@ -595,10 +754,11 @@ $("form").addEventListener("submit", async (e) => {
   const firstLanguage = $("firstLanguage").value.trim();
   const country = countrySel.value;
   const provinceState = subdivisionValue();
-  if (!firstLanguage || !country) { setSubmitStatus("Please fill in the country where you grew up and your first language in About you.", "err"); (!firstLanguage ? $("firstLanguage") : countrySel).focus(); return; }
-  const residenceCountry = residenceSel.value;
-  if (!residenceCountry) { setSubmitStatus("Please choose the country you currently live in, in About you.", "err"); residenceSel.focus(); return; }
+  const accent = $("accent").value.trim();
+  if (!firstLanguage) { setSubmitStatus("Please fill in your first language in About you.", "err"); $("firstLanguage").focus(); return; }
+  if (!country) { setSubmitStatus("Please choose the country you currently live in, in About you.", "err"); countrySel.focus(); return; }
   if (SUBDIVISIONS[country] && !provinceState) { setSubmitStatus(`Please choose your ${SUBDIVISIONS[country].label.toLowerCase()} in About you.`, "err"); subSel.focus(); return; }
+  if (!accent) { setSubmitStatus("Please describe your accent in About you. Any description is fine.", "err"); $("accent").focus(); return; }
   // Gift card details are optional, but if one is filled in we need both to send the card.
   const giftName = $("giftName").value.trim(), giftEmail = $("giftEmail").value.trim();
   const wantsGift = !!(giftName || giftEmail);
@@ -606,62 +766,84 @@ $("form").addEventListener("submit", async (e) => {
     if (!giftName || !giftEmail) { setSubmitStatus("To receive your gift card, please fill in both your name and email, or leave both empty.", "err"); $(giftName ? "giftEmail" : "giftName").focus(); return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(giftEmail)) { setSubmitStatus("Please check your email address.", "err"); $("giftEmail").focus(); return; }
   }
-  if (!state.blob) { setSubmitStatus("Please record yourself reading the appointment first.", "err"); return; }
   if (state.recorder && state.recorder.state === "recording") { setSubmitStatus("Stop the recording before sending.", "err"); return; }
+  const queue = CONFIG.TRANSCRIPTS.filter((t) => state.takes.has(t.id));
+  if (!queue.length) { setSubmitStatus("Please record yourself reading an appointment first.", "err"); return; }
   if (!$("consent").checked) { setSubmitStatus("Please tick the consent box to send your recording.", "err"); return; }
 
-  const payload = {
-    transcriptId: state.transcriptId,
-    firstLanguage, country,
-    provinceState,
-    residenceCountry,
+  const about = {
+    firstLanguage,
     otherLanguages: $("otherLanguages").value.trim(),
-    giftCard: wantsGift && !state.giftSent ? { name: giftName, email: giftEmail } : null,
+    accent,
+    residenceCountry: country,
+    provinceState,
+    ethnicity: selfDescribed("ethnicity"),
+    gender: selfDescribed("gender"),
+    ageRange: $("age").value,
     consent: true,
-    durationSeconds: Math.round(state.seconds * 10) / 10,
-    mimeType: state.mimeType,
     deviceType: deviceType(),
-    userAgent: navigator.userAgent,
-    audioBase64: await blobToBase64(state.blob)
+    userAgent: navigator.userAgent
   };
-
-  // Test mode: nothing is saved, but the thank-you and "record another" flow runs so it can be tried out.
-  if (!CONFIG.ENDPOINT_URL) { showDone("TEST", true, !!payload.giftCard); return; }
-
-  $("submitBtn").disabled = true; setSubmitStatus("Uploading… please keep this page open.");
+  stopPlayback();
+  const isTest = !CONFIG.ENDPOINT_URL;  // test mode: nothing is uploaded, but the whole flow runs
+  const newRefs = [];
+  $("submitBtn").disabled = true;
   try {
-    const res = await fetch(CONFIG.ENDPOINT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
-    const out = await res.json();
-    if (!out.ok) throw new Error(out.error || "Upload failed");
-    showDone(out.ref, false, !!payload.giftCard);
+    for (const [n, t] of queue.entries()) {
+      setSubmitStatus(queue.length > 1 ? `Uploading ${n + 1} of ${queue.length}… please keep this page open.` : "Uploading… please keep this page open.");
+      const take = state.takes.get(t.id);
+      const payload = {
+        ...about,
+        ref: makeRef(),
+        transcriptId: t.id,
+        giftCard: wantsGift && !state.giftSent ? { name: giftName, email: giftEmail } : null,  // once per person
+        durationSeconds: Math.round(take.seconds * 10) / 10,
+        mimeType: take.mimeType,
+        audioBase64: await blobToBase64(take.blob)
+      };
+      let ref = payload.ref;
+      if (!isTest) {
+        const res = await fetch(CONFIG.ENDPOINT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+        const out = await res.json();
+        if (!out.ok) throw new Error(out.error || "Upload failed");
+        ref = out.ref || ref;
+      }
+      if (payload.giftCard) state.giftSent = true;
+      state.takes.delete(t.id); state.sent.add(t.id); state.refs.push(ref); newRefs.push(ref);
+    }
+    renderQueue();
+    showDone(isTest);
   } catch (err) {
-    setSubmitStatus("Your recording didn't upload. Check your internet connection and press Send again.", "err");
+    renderQueue();
+    const left = state.takes.size;
+    setSubmitStatus(newRefs.length
+      ? `${newRefs.length} sent, but ${left} didn't upload. Check your internet connection and press Send again.`
+      : "Your recording didn't upload. Check your internet connection and press Send again.", "err");
   } finally {
     $("submitBtn").disabled = false;
   }
 });
 
 // After a recording is saved: thank them, then offer the appointments they haven't recorded yet.
-function remaining() { return CONFIG.TRANSCRIPTS.filter((t) => !state.recorded.has(t.id)); }
-function showDone(ref, isTest, sentGift) {
-  state.recorded.add(state.transcriptId);
-  state.refs.push(ref);
-  if (sentGift) state.giftSent = true;  // one gift card per person, however many they record
-  const meta = $("meta-" + state.transcriptId);
-  if (meta) { meta.textContent = "Recorded ✓"; meta.classList.add("done-tag"); }
-
-  $("doneTitle").textContent = isTest ? "Test mode: nothing was saved." : "Thank you, your recording was received.";
-  $("refLine").textContent = isTest
-    ? "Connect the page to Google Drive to save recordings. This is how the screen will look."
-    : (state.refs.length === 1
-        ? `Your reference code is ${ref}. Keep it if you might want your recording deleted later.`
-        : `Your reference codes are ${state.refs.join(", ")}. Keep them if you might want your recordings deleted later.`);
+function remaining() { return CONFIG.TRANSCRIPTS.filter((t) => !state.sent.has(t.id)); }
+function showDone(isTest) {
+  $("doneTitle").textContent = isTest ? "Test mode: nothing was saved."
+    : state.refs.length > 1 ? "Thank you, your recordings were received." : "Thank you, your recording was received.";
+  // Reference code(s), shown as chips; kept for every recording this visit
+  const line = $("refLine"); line.textContent = "";
+  line.append(state.refs.length === 1 ? "Your reference code is " : "Your reference codes are ");
+  state.refs.forEach((r, i) => {
+    if (i) line.append(i === state.refs.length - 1 ? " and " : ", ");
+    const code = document.createElement("span"); code.className = "ref"; code.textContent = r; line.append(code);
+  });
+  line.append(`. Please save ${state.refs.length === 1 ? "it" : "them"}: if you'd like a recording deleted later, reach out with ${state.refs.length === 1 ? "this code" : "the code for that recording"}.`);
+  if (isTest) line.append(" (Test mode: connect the page to Google Drive to save recordings.)");
 
   const left = remaining();
   $("more").hidden = false; $("againBtn").hidden = !left.length; $("finishBtn").hidden = !left.length;
   $("moreText").textContent = left.length
-    ? `Would you like to record another while you're here? ${left.length === 1 ? "There's 1 appointment" : `There are ${left.length} appointments`} left, about 3 minutes each.`
-    : `You've recorded all ${CONFIG.TRANSCRIPTS.length} appointments. Thank you so much for your help with this research.`;
+    ? `Would you like to record another while you're here? ${left.length === 1 ? "There's 1 appointment left, about 3 minutes long." : `There are ${left.length} appointments left, about 3 minutes each.`}`
+    : `You've recorded all ${CONFIG.TRANSCRIPTS.length} appointments. Thank you so much for your help with this research. If you included your name and email, we wil send you your gift card shortly.`;
 
   $("form").hidden = true; $("done").hidden = false;
   $("done").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -669,14 +851,14 @@ function showDone(ref, isTest, sentGift) {
 
 // Record another: keep the "about you" answers and consent, open the next appointment not yet recorded.
 $("againBtn").addEventListener("click", () => {
-  resetRecording(""); setSubmitStatus("");
+  setSubmitStatus("");
   const next = remaining()[0];
   $("t-" + next.id).checked = true; selectTranscript(next.id);
   $("done").hidden = true; $("form").hidden = false;
   $("s2").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 $("finishBtn").addEventListener("click", () => {
-  $("moreText").textContent = "Thank you for your help with this research. You can close this page.";
+  $("moreText").textContent = "Thank you so much for your help with this research. If you included your name and email, we wil send you your gift card shortly.";
   $("againBtn").hidden = true; $("finishBtn").hidden = true;
 });
 </script>
